@@ -1,0 +1,96 @@
+<!-- public/liens.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Liens Raccourcis</title>
+    <!-- Ajouter le CSS de SweetAlert -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Liste des Liens Raccourcis</h1>
+    
+    <div class="link-list" id="link-list"></div>
+
+    <div class="button-container">
+        <form action="./index.html" id="liste-liens">
+            <button type="submit" style="margin-top: 10px;">Reducteur de liens</button>
+        </form>
+    </div>
+
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script>
+        // Fonction pour récupérer la liste des liens
+        function fetchLinks() {
+            fetch('http://localhost:8080/api/liens')
+            .then(response => response.json())
+            .then(data => {
+                const linkList = document.getElementById('link-list');
+                linkList.innerHTML = ''; // Clear previous links
+                
+                // Boucle à travers les liens et afficher chacun
+                data.links.forEach(link => {
+                    const linkItem = document.createElement('div');
+                    linkItem.classList.add('link-item');
+                    linkItem.innerHTML = `
+                        <p><strong>ID :</strong> ${link.id}</p>
+                        <p><strong>URL Originale:</strong> <a href="${link.original_url}" target="_blank">${link.original_url}</a></p>
+                        <p><strong>Lien Raccourci:</strong> <a href="/${link.short_url}" target="_blank" class="short-url">${link.short_url}</a></p>
+                        <p class="visit-count"><strong>Visites:</strong> ${link.visit}</p>
+                        <p class="created-at"><strong>Créé le:</strong> ${new Date(link.created_at).toLocaleString()}</p>
+                        <button onclick="supprimer_liens(${link.id})">Supprimer</button>
+                    `;
+                    
+                    linkList.appendChild(linkItem);
+                });
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des liens:', error);
+                document.getElementById('link-list').innerHTML = '<p>Erreur lors du chargement des liens.</p>';
+            });
+        }
+
+        // Fonction pour supprimer un lien
+    function supprimer_liens(linkId) {
+        swal({
+            title: "Êtes-vous sûr?",
+            text: "Vous allez supprimer ce lien!",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((WillDelete) => {
+            if (WillDelete) {
+                // Utilisation de fetch pour supprimer le lien
+                fetch(`http://localhost:8080/api/lien/${linkId}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Erreur de réseau');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === "SUCCESS") {
+                            swal("Succès", data.message, "success");
+
+                            // Rafraîchir la liste après la suppression
+                            fetchLinks();
+                        } else {
+                            swal("Erreur", data.message, "error");
+                        }
+                    })
+                    .catch(error => {
+                        swal("Erreur", "Erreur lors de la suppression du lien: " + error.message, "error");
+                    });
+            }
+        });
+    }
+
+    
+        // Appeler fetchLinks à l'initialisation de la page
+        document.addEventListener('DOMContentLoaded', fetchLinks);
+    </script>
+</body>
+</html>

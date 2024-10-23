@@ -1,0 +1,80 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shorten URL</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Raccourcisseur d'URL</h1>
+    <form method="post" action="/" id="submit-link">
+        <label for="url">Entrez l'URL à raccourcir :</label>
+        <input name="url" id="url" type="url" placeholder="https://example.com" required />
+        <button type="submit">Raccourcir</button>
+    </form>
+
+    <h2>Nombre de Liens : <span id="link-count">0</span></h2>
+    <form action="./liens.html" id="liste-liens">
+        <button type="submit">Liste liens</button>
+    </form>
+    
+
+    <div id="link-container">
+        <h2>Liens Raccourcis :</h2>
+        <div id="links"></div>
+    </div>
+
+    <script>
+        // Fonction pour récupérer le nombre de liens
+        function fetchLinkCount() {
+            fetch('/api/nbliens')
+                .then(response => response.json())
+                .then(data => {
+                    const nbliens=document.getElementById('link-count');
+                    nbliens.innerHTML=data.nbliens;
+                })
+                .catch(error => console.error('Erreur lors de la récupération du nombre de liens:', error));
+        }
+
+
+        // Événement de soumission du formulaire
+        document.getElementById('submit-link').addEventListener('submit', function (e) {
+            e.preventDefault(); // Empêche la soumission par défaut
+
+            const urlInput = document.getElementById('url').value;
+
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url: urlInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                // Affiche le lien raccourci
+                const nbliens=document.getElementById('link-count');
+                const linksContainer = document.getElementById('links');
+                const newLinkItem = document.createElement('div');
+                nbliens.innerHTML=data.nbliens;
+                newLinkItem.className = 'link-item';
+                newLinkItem.innerHTML = `
+                <br>Lien original : <a href="${data.url}" target="_blank">${data.url}</a>
+                <br> Lien raccourci : <a href="/${data.short_url}" target="_blank">${data.short_url}</a>
+                <br> ${data.message}`;
+                linksContainer.appendChild(newLinkItem);
+
+                // Met à jour le nombre de liens
+                fetchLinkCount();
+            })
+            .catch(error => console.error('Erreur lors de la soumission de l\'URL:', error));
+        });
+
+        // Récupère le nombre de liens à l'initialisation
+        fetchLinkCount();
+    </script>
+</body>
+</html>
