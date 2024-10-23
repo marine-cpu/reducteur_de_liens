@@ -122,18 +122,19 @@ app.post('/', (req, res) => {
 
 
 // Route pour rediriger le lien raccourci
-app.get('/:short_url',(req,res)=>{
+app.get('/:short_url',(req,res,next)=>{
     const shortUrl=req.params.short_url;
 
     db.get('SELECT original_url FROM urls WHERE short_url=?',[shortUrl],(err,row)=>{
         if (err){
             return res.status(500).json({ message: 'Erreur lors de la recupération de l\'URL', error: err.message });
         }
-        if (row && row.original_url) {
+        if (row ) {
+            const original_url=row.original_url;
             res.redirect(row.original_url);
         } else {
             // Gérer le cas où row est indéfini ou row.original_url n'existe pas
-            res.status(404).send('URL not found');
+            return res.status(404).send('URL not found');
         }
     })
 })
