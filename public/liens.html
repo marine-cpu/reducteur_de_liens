@@ -24,7 +24,7 @@
     <script>
         // Fonction pour récupérer la liste des liens
         function fetchLinks() {
-            fetch('https://reducteur-de-liens.onrender.com//api/liens')
+            fetch('https://reducteur-de-liens.onrender.com/api/liens')
             .then(response => response.json())
             .then(data => {
                 const linkList = document.getElementById('link-list');
@@ -64,7 +64,7 @@
         .then((WillDelete) => {
             if (WillDelete) {
                 // Utilisation de fetch pour supprimer le lien
-                fetch(`https://reducteur-de-liens.onrender.com//api/lien/${linkId}`, { method: 'DELETE' })
+                fetch(`https://reducteur-de-liens.onrender.com/api/lien/${linkId}`, { method: 'DELETE' })
                     .then(response => {
                         if (!response.ok) {
                             throw new Error('Erreur de réseau');
