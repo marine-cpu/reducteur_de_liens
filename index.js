@@ -129,7 +129,12 @@ app.get('/:short_url',(req,res)=>{
         if (err){
             return res.status(500).json({ message: 'Erreur lors de la recupération de l\'URL', error: err.message });
         }
-        res.redirect(row.original_url)
+        if (row && row.original_url) {
+            res.redirect(row.original_url);
+        } else {
+            // Gérer le cas où row est indéfini ou row.original_url n'existe pas
+            res.status(404).send('URL not found');
+        }
     })
 })
 
